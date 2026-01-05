@@ -116,8 +116,24 @@ export default function InstrumentStatus({ initialInstruments }: InstrumentStatu
     }
   };
 
-  const getDaysCheckedOut = (checkedOutAt: string) => {
-    const days = Math.floor((new Date().getTime() - new Date(checkedOutAt).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const getDaysCheckedOut = (checkedOutAt: any) => {
+    if (!checkedOutAt) return '0 days';
+    
+    let date;
+    if (checkedOutAt.seconds) {
+      // Firebase Timestamp
+      date = new Date(checkedOutAt.seconds * 1000);
+    } else if (typeof checkedOutAt === 'string') {
+      // ISO string
+      date = new Date(checkedOutAt);
+    } else {
+      // Already a Date object
+      date = new Date(checkedOutAt);
+    }
+    
+    if (isNaN(date.getTime())) return '0 days';
+    
+    const days = Math.floor((new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     return `${days} ${days === 1 ? 'day' : 'days'}`;
   };
 
@@ -155,7 +171,7 @@ export default function InstrumentStatus({ initialInstruments }: InstrumentStatu
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
         {(activeTab === 'available' ? availableInstruments : checkedOutInstruments).map((instrument) => (
           <div key={instrument.id} className="bg-white rounded-lg shadow-md overflow-hidden relative">
             <div className="relative">
