@@ -69,14 +69,4 @@ npm run dev
 - `src/components/InstrumentStatus.tsx` - Main component
 - `src/data/` - Local data files (fallback)
 
-## Migration from AWS
-
-All AWS resources have been removed:
-- AWS Amplify configuration
-- AWS AppSync GraphQL API
-- Amazon Cognito authentication
-- AWS CloudFormation stacks
-- AWS IAM roles
-- Amazon S3 deployment bucket
-
 The application now uses Firebase for all backend services and deploys as a static site on GitHub Pages.
