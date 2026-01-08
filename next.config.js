@@ -2,8 +2,8 @@
 const nextConfig = {
   output: 'export',
   trailingSlash: true,
-  basePath: '/APTWebsite',
-  assetPrefix: '/APTWebsite/',
+  basePath: process.env.NODE_ENV === 'production' ? '/APTWebsite' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/APTWebsite/' : '',
   images: {
     unoptimized: true
   },

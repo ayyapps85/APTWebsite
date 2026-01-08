@@ -34,7 +34,7 @@ export default function AttendancePage() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <img src="/images/ATPLogo.png" alt="ATP Logo" className="h-12 w-12" />
+            <img src={process.env.NODE_ENV === 'production' ? '/APTWebsite/images/ATPLogo.png' : '/images/ATPLogo.png'} alt="ATP Logo" className="h-12 w-12" />
             <div className="flex items-center gap-4">
               <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium">
                 Instruments

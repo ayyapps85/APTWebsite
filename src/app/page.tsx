@@ -21,7 +21,7 @@ export default function Home() {
       <main className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <img src="/images/ATPLogo.png" alt="ATP Logo" className="h-16 w-16" />
+            <img src={process.env.NODE_ENV === 'production' ? '/APTWebsite/images/ATPLogo.png' : '/images/ATPLogo.png'} alt="ATP Logo" className="h-16 w-16" />
             <h1 className="text-3xl font-bold">APT Instrument Status</h1>
           </div>
           <p className="text-gray-600 mb-6">Sign in with Google to access the system</p>
@@ -47,7 +47,7 @@ export default function Home() {
       <main className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <img src="/images/ATPLogo.png" alt="ATP Logo" className="h-16 w-16" />
+            <img src={process.env.NODE_ENV === 'production' ? '/APTWebsite/images/ATPLogo.png' : '/images/ATPLogo.png'} alt="ATP Logo" className="h-16 w-16" />
             <h1 className="text-3xl font-bold text-red-600">Access Denied</h1>
           </div>
           <p className="text-gray-600 mb-4">Your account ({user.email}) is not authorized to access this system.</p>
@@ -68,7 +68,7 @@ export default function Home() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <img src="/images/ATPLogo.png" alt="ATP Logo" className="h-12 w-12" />
+            <img src={process.env.NODE_ENV === 'production' ? '/APTWebsite/images/ATPLogo.png' : '/images/ATPLogo.png'} alt="ATP Logo" className="h-12 w-12" />
             <div className="flex items-center gap-4">
               <span className="text-xl font-semibold">Instruments</span>
               <span className="text-gray-400">|</span>
