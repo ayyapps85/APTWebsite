@@ -32,9 +32,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+      console.log('Attempting Google sign-in...');
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('Sign-in successful:', result.user.email);
+    } catch (error: any) {
       console.error('Sign in error:', error);
+      alert(`Sign-in failed: ${error.message}`);
     }
   };
 

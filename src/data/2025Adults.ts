@@ -1,6 +1,5 @@
 export const adults2025 = [
   'Anuradha Gokul Krishnamurthy',
-  'Balasubramaniam Krishnamurthy',
   'Chandramohan Dharmapuri Sahasranamam',
   'Gopinath Kasirajan',
   'Iswarya Prakash',

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { GoogleSheetsService } from '@/lib/google-sheets-service';
 import { GoogleOAuthService } from '@/lib/google-oauth';
+import { FinanceSheetsService } from '@/lib/finance-sheets-service';
 import { adults2025 } from '@/data/2025Adults';
 import { kidsTeens2025 } from '@/data/2025KidsTeens';
 import { coreAdults } from '@/data/CoreAdults';
@@ -14,14 +14,14 @@ interface Member {
   name: string;
 }
 
-interface AttendanceRecord {
+interface PaymentRecord {
   memberName: string;
   status: string;
 }
 
-export default function AttendanceTracker() {
+export default function FinanceTracker() {
   const [selectedSection, setSelectedSection] = useState('2025Adults');
-  const [attendanceStatus, setAttendanceStatus] = useState<Record<string, string>>({});
+  const [paymentStatus, setPaymentStatus] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [oauthReady, setOauthReady] = useState(false);
   const { user } = useAuth();
@@ -41,11 +41,11 @@ export default function AttendanceTracker() {
 
   useEffect(() => {
     if (oauthReady) {
-      loadTodayAttendance();
+      loadPaymentStatus();
     }
   }, [selectedSection, oauthReady]);
 
-  const loadTodayAttendance = async () => {
+  const loadPaymentStatus = async () => {
     try {
       setLoading(true);
       const accessToken = await GoogleOAuthService.getAccessToken();
@@ -54,20 +54,20 @@ export default function AttendanceTracker() {
         return;
       }
       
-      const records = await GoogleSheetsService.getTodayAttendance(selectedSection, accessToken);
+      const records = await FinanceSheetsService.getPaymentStatus(selectedSection, accessToken);
       const statusMap: Record<string, string> = {};
-      records.forEach((record: AttendanceRecord) => {
+      records.forEach((record: PaymentRecord) => {
         statusMap[record.memberName] = record.status;
       });
-      setAttendanceStatus(statusMap);
+      setPaymentStatus(statusMap);
     } catch (error) {
-      console.error('Error loading attendance:', error);
+      console.error('Error loading payment status:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleAttendance = async (member: Member) => {
+  const togglePaymentStatus = async (member: Member) => {
     if (!user) return;
 
     try {
@@ -77,23 +77,22 @@ export default function AttendanceTracker() {
         return;
       }
 
-      const currentStatus = attendanceStatus[member.name];
-      const newStatus = currentStatus === 'present' ? 'absent' : 'present';
+      const currentStatus = paymentStatus[member.name];
+      const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid';
       
-      await GoogleSheetsService.appendAttendanceRecord({
-        date: new Date().toISOString().split('T')[0],
-        section: selectedSection,
+      await FinanceSheetsService.updatePaymentStatus({
         memberName: member.name,
+        section: selectedSection,
         status: newStatus,
-        recordedBy: user.email || 'Unknown'
+        updatedBy: user.email || 'Unknown'
       }, accessToken);
 
-      setAttendanceStatus(prev => ({
+      setPaymentStatus(prev => ({
         ...prev,
         [member.name]: newStatus
       }));
     } catch (error) {
-      console.error('Error updating attendance:', error);
+      console.error('Error updating payment status:', error);
     }
   };
 
@@ -103,22 +102,22 @@ export default function AttendanceTracker() {
 
   const getStatusCounts = () => {
     const sectionMembers = getFilteredMembers();
-    const present = sectionMembers.filter(member => 
-      attendanceStatus[member.name] === 'present'
+    const paid = sectionMembers.filter(member => 
+      paymentStatus[member.name] === 'paid'
     ).length;
-    const absent = sectionMembers.length - present;
-    return { present, absent };
+    const unpaid = sectionMembers.length - paid;
+    return { paid, unpaid };
   };
 
-  const resetAttendance = () => {
-    setAttendanceStatus({});
+  const resetPaymentStatus = () => {
+    setPaymentStatus({});
   };
 
   const counts = getStatusCounts();
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">Attendance Tracker</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">Finance Tracker</h1>
       
       {loading && (
         <div className="text-center mb-4">
@@ -143,7 +142,7 @@ export default function AttendanceTracker() {
                 onClick={() => setSelectedSection(section)}
                 className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
                   selectedSection === section
-                    ? 'bg-orange-500 text-white'
+                    ? 'bg-red-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -153,11 +152,11 @@ export default function AttendanceTracker() {
           </div>
           <div className="flex items-center gap-4 ml-4">
             <div className="flex gap-4">
-              <span className="text-green-600 font-semibold">Present: {counts.present}</span>
-              <span className="text-red-600 font-semibold">Absent: {counts.absent}</span>
+              <span className="text-green-600 font-semibold">Paid: {counts.paid}</span>
+              <span className="text-red-600 font-semibold">Unpaid: {counts.unpaid}</span>
             </div>
             <button
-              onClick={resetAttendance}
+              onClick={resetPaymentStatus}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
             >
               🔄 Reset
@@ -168,16 +167,16 @@ export default function AttendanceTracker() {
 
       {/* Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Absent Members */}
+        {/* Unpaid Members */}
         <div className="bg-white rounded-lg shadow-md p-4">
-          <h2 className="text-xl font-bold text-red-600 mb-2 text-center">Absent</h2>
+          <h2 className="text-xl font-bold text-red-600 mb-2 text-center">Unpaid</h2>
           <div className="space-y-2">
             {getFilteredMembers()
-              .filter(member => attendanceStatus[member.name] !== 'present')
+              .filter(member => paymentStatus[member.name] !== 'paid')
               .map((member) => (
                 <button
                   key={member.id}
-                  onClick={() => toggleAttendance(member)}
+                  onClick={() => togglePaymentStatus(member)}
                   className="w-full flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
                 >
                   <span className="text-red-800">{member.name}</span>
@@ -187,16 +186,16 @@ export default function AttendanceTracker() {
           </div>
         </div>
 
-        {/* Present Members */}
+        {/* Paid Members */}
         <div className="bg-white rounded-lg shadow-md p-4">
-          <h2 className="text-xl font-bold text-green-600 mb-2 text-center">Present</h2>
+          <h2 className="text-xl font-bold text-green-600 mb-2 text-center">Paid</h2>
           <div className="space-y-2">
             {getFilteredMembers()
-              .filter(member => attendanceStatus[member.name] === 'present')
+              .filter(member => paymentStatus[member.name] === 'paid')
               .map((member) => (
                 <button
                   key={member.id}
-                  onClick={() => toggleAttendance(member)}
+                  onClick={() => togglePaymentStatus(member)}
                   className="w-full flex justify-between items-center p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
                 >
                   <span className="text-green-800 font-semibold">{member.name}</span>

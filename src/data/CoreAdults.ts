@@ -19,6 +19,5 @@ export const coreAdults = [
   'Thenmozhi',
   'Vishalini Manoharan',
   'Vijay Chakravarthy',
-  'Vijai Anand Ramar',
-  'Vishalini Manoharan'
+  'Vijai Anand Ramar'
 ];
