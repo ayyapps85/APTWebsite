@@ -70,9 +70,15 @@ export class GoogleOAuthService {
       return null;
     }
 
+    // Ensure we're initialized first
+    if (!this.tokenClient) {
+      await this.initialize();
+    }
+
     // No token found, need to request one
     return new Promise((resolve) => {
       if (!this.tokenClient) {
+        alert('Google OAuth not properly initialized');
         resolve(null);
         return;
       }
