@@ -153,7 +153,7 @@ export default function AttendanceTracker() {
       setLoading(true);
       const accessToken = await GoogleOAuthService.getAccessToken();
       if (!accessToken) {
-        console.error('No access token available');
+        console.log('No access token - user needs to authenticate');
         return;
       }
       
