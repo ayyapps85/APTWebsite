@@ -104,7 +104,8 @@ export class GoogleOAuthService {
       
       if (isMobileSafari) {
         // For mobile Safari, use redirect flow
-        const redirectUri = window.location.origin + window.location.pathname;
+        const basePath = process.env.NODE_ENV === 'production' ? '/APTWebsite' : '';
+        const redirectUri = window.location.origin + basePath + '/';
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
           `client_id=${this.CLIENT_ID}&` +
           `redirect_uri=${encodeURIComponent(redirectUri)}&` +
