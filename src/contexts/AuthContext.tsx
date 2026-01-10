@@ -44,27 +44,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('Attempting Google sign-in...');
       
-      // Detect Safari (both mobile and desktop)
-      const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-      
-      if (isSafari) {
-        // Use redirect for all Safari browsers
-        console.log('Using redirect for Safari');
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        // Use popup for other browsers
+      // Try popup first, fallback to redirect if it fails
+      try {
         const result = await signInWithPopup(auth, googleProvider);
         console.log('Sign-in successful:', result.user.email);
+      } catch (popupError: any) {
+        console.log('Popup failed, trying redirect...', popupError.code);
+        if (popupError.code === 'auth/popup-blocked' || 
+            popupError.code === 'auth/popup-closed-by-user' ||
+            popupError.code === 'auth/cancelled-popup-request') {
+          await signInWithRedirect(auth, googleProvider);
+        } else {
+          throw popupError;
+        }
       }
     } catch (error: any) {
       console.error('Sign in error:', error);
-      // Fallback to redirect if popup fails
-      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
-        console.log('Popup failed, trying redirect...');
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        alert(`Sign-in failed: ${error.message}`);
-      }
+      alert(`Sign-in failed: ${error.message}`);
     }
   };
 
