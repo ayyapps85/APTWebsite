@@ -12,9 +12,21 @@ export class GoogleOAuthService {
   private static isAuthenticating: boolean = false;
 
   static async initialize() {
+    // Check if we're returning from OAuth redirect
+    if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      if (accessToken) {
+        this.accessToken = accessToken;
+        localStorage.setItem('google_access_token', accessToken);
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+    
     // Try to restore token from localStorage
     if (typeof window !== 'undefined') {
-      this.accessToken = localStorage.getItem('google_access_token');
+      this.accessToken = this.accessToken || localStorage.getItem('google_access_token');
     }
     
     return new Promise<void>((resolve) => {
