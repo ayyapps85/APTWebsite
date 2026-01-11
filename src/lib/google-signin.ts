@@ -70,9 +70,10 @@ export class GoogleSignInService {
     // Store user in localStorage
     localStorage.setItem('google_user', JSON.stringify(this.user));
     
-    // Reset flag and reload without requesting Sheets token
+    // Reset flag and redirect to attendance tab
     this.isProcessingSignIn = false;
-    window.location.reload();
+    const basePath = process.env.NODE_ENV === 'production' ? '/APTWebsite' : '';
+    window.location.href = `${basePath}/attendance`;
   }
 
   static async signIn() {
