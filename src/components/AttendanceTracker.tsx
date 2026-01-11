@@ -35,6 +35,7 @@ export default function AttendanceTracker() {
   const [oauthInitialized, setOauthInitialized] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [absenceReport, setAbsenceReport] = useState<AbsenceReport[]>([]);
+  const [hasToken, setHasToken] = useState(false);
   const { user } = useAuth();
 
   const sections = {
@@ -47,10 +48,11 @@ export default function AttendanceTracker() {
   useEffect(() => {
     if (!oauthInitialized) {
       setOauthInitialized(true);
-      GoogleOAuthService.initialize().then(async () => {
+      GoogleOAuthService.initialize().then(() => {
         setOauthReady(true);
-        // Trigger OAuth flow immediately if no token exists
-        await GoogleOAuthService.getAccessToken();
+        // Check if we have a stored token
+        const token = localStorage.getItem('google_access_token');
+        setHasToken(!!token);
       });
     }
   }, []);
@@ -148,12 +150,25 @@ export default function AttendanceTracker() {
     return () => clearInterval(interval);
   }, [oauthReady, user]);
 
+  const connectToSheets = async () => {
+    try {
+      const token = await GoogleOAuthService.getAccessToken();
+      if (token) {
+        setHasToken(true);
+        loadTodayAttendance();
+      }
+    } catch (error) {
+      console.error('Failed to connect to Google Sheets:', error);
+    }
+  };
+
   const loadTodayAttendance = async () => {
     try {
       setLoading(true);
-      const accessToken = await GoogleOAuthService.getAccessToken();
+      const { GoogleSignInService } = await import('@/lib/google-signin');
+      const accessToken = GoogleSignInService.getAccessToken();
       if (!accessToken) {
-        console.log('No access token - user needs to authenticate');
+        console.log('No access token - user needs to sign in');
         return;
       }
       
@@ -385,6 +400,18 @@ export default function AttendanceTracker() {
       {loading && (
         <div className="text-center mb-2">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+
+      {!hasToken && oauthReady && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4 text-center">
+          <p className="text-yellow-800 mb-2">Connect to Google Sheets to track attendance</p>
+          <button
+            onClick={connectToSheets}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            📊 Connect to Google Sheets
+          </button>
         </div>
       )}
 
