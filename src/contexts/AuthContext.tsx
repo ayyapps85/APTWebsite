@@ -27,16 +27,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
       setLoading(false);
     });
-    
     return unsubscribe;
   }, []);
 
   const signInWithGoogle = async () => {
     try {
+      console.log('Attempting Google sign-in...');
       const result = await signInWithPopup(auth, googleProvider);
       console.log('Sign-in successful:', result.user.email);
     } catch (error: any) {
-      console.error('Sign-in failed:', error.code, error.message);
+      console.error('Sign in error:', error);
       alert(`Sign-in failed: ${error.message}`);
     }
   };
@@ -47,14 +47,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Clear Google Sheets token when logging out
       const { GoogleOAuthService } = await import('@/lib/google-oauth');
       GoogleOAuthService.revokeToken();
-      // Clear all Google auth cookies and sessions
-      if (window.google?.accounts) {
-        window.google.accounts.id.disableAutoSelect();
-      }
-      // Clear localStorage
-      localStorage.clear();
-      // Force reload to clear all cached state
-      window.location.reload();
+      // Redirect to home page after logout with proper base path
+      const basePath = process.env.NODE_ENV === 'production' ? '/APTWebsite' : '';
+      window.location.href = basePath + '/';
     } catch (error) {
       console.error('Sign out error:', error);
     }
