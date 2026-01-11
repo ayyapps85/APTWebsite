@@ -131,7 +131,10 @@ export class GoogleSignInService {
     localStorage.removeItem('google_access_token');
     localStorage.removeItem('google_sheets_token');
     window.google?.accounts.id.disableAutoSelect();
-    window.location.href = '/';
+    
+    // Use the correct base path for GitHub Pages
+    const basePath = process.env.NODE_ENV === 'production' ? '/APTWebsite/' : '/';
+    window.location.href = basePath;
   }
 
   static getCurrentUser() {
