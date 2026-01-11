@@ -10,6 +10,7 @@ export class GoogleSignInService {
   private static user: any = null;
   private static tokenClient: any = null;
   private static accessToken: string | null = null;
+  private static isProcessingSignIn: boolean = false;
 
   static async initialize() {
     return new Promise<void>((resolve) => {
@@ -51,6 +52,13 @@ export class GoogleSignInService {
   }
 
   private static handleCredentialResponse(response: any) {
+    if (this.isProcessingSignIn) {
+      console.log('Already processing sign-in, skipping...');
+      return;
+    }
+    
+    this.isProcessingSignIn = true;
+    
     // Decode JWT token
     const payload = JSON.parse(atob(response.credential.split('.')[1]));
     this.user = {
@@ -73,12 +81,14 @@ export class GoogleSignInService {
         }
         // Restore original callback
         this.tokenClient.callback = originalCallback;
-        // Now reload the page
+        // Reset flag and reload
+        this.isProcessingSignIn = false;
         window.location.reload();
       };
       this.tokenClient.requestAccessToken();
     } else {
       // No token client, just reload
+      this.isProcessingSignIn = false;
       window.location.reload();
     }
   }
@@ -119,8 +129,9 @@ export class GoogleSignInService {
     this.accessToken = null;
     localStorage.removeItem('google_user');
     localStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_sheets_token');
     window.google?.accounts.id.disableAutoSelect();
-    window.location.reload();
+    window.location.href = '/';
   }
 
   static getCurrentUser() {
