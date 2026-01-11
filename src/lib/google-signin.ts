@@ -125,7 +125,8 @@ export class GoogleSignInService {
   static getAccessToken(): string | null {
     if (this.accessToken) return this.accessToken;
     
-    const stored = localStorage.getItem('google_access_token');
+    // Try multiple storage keys
+    const stored = localStorage.getItem('google_access_token') || localStorage.getItem('google_sheets_token');
     if (stored) {
       this.accessToken = stored;
       return stored;

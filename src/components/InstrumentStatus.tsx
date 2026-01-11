@@ -37,19 +37,8 @@ export default function InstrumentStatus({ initialInstruments }: InstrumentStatu
       let accessToken = GoogleSignInService.getAccessToken();
       console.log('Access token available:', !!accessToken);
       
-      if (!accessToken && user) {
-        console.log('No access token but user exists, requesting token...');
-        const { GoogleOAuthService } = await import('@/lib/google-oauth');
-        try {
-          accessToken = await GoogleOAuthService.getAccessToken();
-          console.log('Got fresh access token:', !!accessToken);
-        } catch (error) {
-          console.error('Failed to get fresh token:', error);
-        }
-      }
-      
       if (!accessToken) {
-        console.log('No access token available');
+        console.log('No access token available - user needs to sign in with Sheets permission');
         return;
       }
       
